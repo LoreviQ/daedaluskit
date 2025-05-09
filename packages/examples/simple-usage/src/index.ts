@@ -1,7 +1,7 @@
-import { getCoreVersion } from "@deadaluskit/core";
-import { getBasicUtility } from "@deadaluskit/basic";
+import { getCoreVersion } from "@daedaluskit/core";
+import { getBasicUtility } from "@daedaluskit/basic";
 
-console.log("DeadalusKit Simple Usage Example:");
+console.log("Daedaluskit Simple Usage Example:");
 console.log("--------------------------------");
 console.log("Core Version:", getCoreVersion());
 console.log("Basic Utility:", getBasicUtility());

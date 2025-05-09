@@ -1,7 +1,7 @@
 {
-  "name": "@deadaluskit/basic",
+  "name": "@daedaluskit/basic",
   "version": "0.1.0",
-  "description": "Basic components for DeadalusKit",
+  "description": "Basic components for Daedaluskit",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsc",
+    "clean": "rimraf dist",
     "dev": "tsc -w",
     "prepublishOnly": "pnpm run build"
   },
@@ -19,6 +20,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@deadaluskit/core": "workspace:*"
+    "@daedaluskit/core": "workspace:*"
   }
 }
