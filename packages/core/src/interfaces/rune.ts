@@ -3,8 +3,17 @@ import ms from "ms";
 
 export type RuneType = "system" | "prompt";
 
+export interface RuneData {
+    runeKey: string;
+    content: string;
+    type: RuneType;
+    order: number;
+    charLength: number;
+    tokenLength?: number;
+}
+
 export interface IRune<Config = any> {
-    readonly key: string; // unique identifier
+    readonly key: string; // Unique identifier
     config?: Config;
     order: number;
     type: RuneType;
@@ -15,7 +24,7 @@ export interface IRune<Config = any> {
     expiresAt: number; // Timestamp in milliseconds
     initialize?(agent: Agent): Promise<void>;
     gather(): Promise<string>;
-    getData(revalidate?: boolean): Promise<string>;
+    getData(revalidate?: boolean): Promise<RuneData>;
 }
 
 export abstract class Rune<Config = any> implements IRune<Config> {
@@ -64,7 +73,7 @@ export abstract class Rune<Config = any> implements IRune<Config> {
     abstract initialize?(agent: Agent): Promise<void>;
     abstract gather(): Promise<string>;
 
-    async getData(revalidate: boolean = false): Promise<string> {
+    async getData(revalidate: boolean = false): Promise<RuneData> {
         if (
             revalidate ||
             this.data === undefined ||
@@ -76,6 +85,13 @@ export abstract class Rune<Config = any> implements IRune<Config> {
                 this.expiresAt = Date.now() + this.ttl;
             }
         }
-        return this.data;
+        return {
+            runeKey: this.key,
+            content: this.data,
+            type: this.type,
+            order: this.order,
+            charLength: this.data.length,
+            tokenLength: undefined, // To be populated by the context builder
+        };
     }
 }
