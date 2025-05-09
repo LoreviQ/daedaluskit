@@ -1,0 +1,21 @@
+{
+  "name": "deadaluskit-monorepo",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" --filter \"!./packages/examples/**\" run build",
+    "dev": "pnpm -r --parallel --filter \"./packages/**\" --filter \"!./packages/examples/**\" run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

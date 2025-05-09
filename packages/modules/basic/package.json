@@ -1,0 +1,24 @@
+{
+  "name": "@deadaluskit/basic",
+  "version": "0.1.0",
+  "description": "Basic components for DeadalusKit",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "dev": "tsc -w",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@deadaluskit/core": "workspace:*"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@deadaluskit/example-simple-usage",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Simple example using DeadalusKit packages",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "rimraf dist && tsc",
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@deadaluskit/basic": "workspace:*",
+    "@deadaluskit/core": "workspace:*"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2"
+  }
+}
