@@ -8,8 +8,8 @@ export interface RuneData {
     content: string;
     type: RuneType;
     order: number;
-    charLength: number;
-    tokenLength?: number;
+    chars: number;
+    tokens?: number;
 }
 
 export interface IRune<Config = any> {
@@ -90,8 +90,8 @@ export abstract class Rune<Config = any> implements IRune<Config> {
             content: this.data,
             type: this.type,
             order: this.order,
-            charLength: this.data.length,
-            tokenLength: undefined, // To be populated by the context builder
+            chars: this.data.length,
+            tokens: undefined, // To be populated by the context builder
         };
     }
 }

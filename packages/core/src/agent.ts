@@ -8,9 +8,9 @@ import {
 } from "./types";
 
 export interface AgentConfig {
-    targetTokens?: number; // The Agent will aim for this number of tokens
-    maxOutputTokens?: number; // Maximum number of tokens for the LLM output
-    temperature?: number; // Temperature for the LLM
+    targetTokens: number; // The Agent will aim for this number of tokens
+    maxOutputTokens: number; // Maximum number of tokens for the LLM output
+    temperature: number; // Temperature for the LLM
 }
 
 const DEFAULT_AGENT_CONFIG: AgentConfig = {
@@ -66,7 +66,7 @@ export class Agent {
 
     private formatEdictsForPrompt(edictsToFormat: Edict[]): string {
         if (!edictsToFormat || edictsToFormat.length === 0) return "";
-        return edictsToFormat
+        const tool_descriptions = edictsToFormat
             .map(
                 (edict) =>
                     `Tool: ${edict.key}\nDescription: ${
@@ -77,12 +77,13 @@ export class Agent {
                 // Make sure e.argsSchema is not undefined if you stringify it directly, or handle undefined
             )
             .join("\n\n"); // Added double newline for better separation
+        return ["--- AVAILABLE TOOLS ---", tool_descriptions].join("\n\n");
     }
 
-    private async buildPrompts(
-        userInput?: string,
-        runesToUse?: Rune[]
-    ): Promise<{ systemPrompt: string; userPrompt: string }> {
+    private async buildPrompts(): Promise<{
+        systemPrompt: string;
+        userPrompt: string;
+    }> {
         if (!this.gateway) {
             throw new Error(
                 "[Agent] Gateway not set. Cannot build prompts without tokenizer/context window."
@@ -90,14 +91,10 @@ export class Agent {
         }
 
         const modelContextWindow = this.gateway.getModelContextWindow();
-        const targetTokens = this.config.targetTokens || 8000;
-        const maxOutputTokens = this.config.maxOutputTokens || 1024;
-
-        // Ensure targetTokens respects model limits, reserving space for output
-        const effectiveMaxPromptTokens = Math.min(
-            targetTokens,
-            modelContextWindow - maxOutputTokens
-        );
+        const targetTokens =
+            this.config.targetTokens || DEFAULT_AGENT_CONFIG.targetTokens;
+        const maxOutputTokens =
+            this.config.maxOutputTokens || DEFAULT_AGENT_CONFIG.maxOutputTokens;
 
         let currentSystemTokens = 0;
         let currentUserPromptTokens = 0;
@@ -105,31 +102,31 @@ export class Agent {
         const systemRuneContent: string[] = [];
         const userRuneContent: string[] = [];
 
-        const activeRunes = runesToUse || Array.from(this.runes.values());
-        const sortedRunes = activeRunes.sort((a, b) => a.order - b.order);
+        const sortedRunes = Array.from(this.runes.values()).sort(
+            (a, b) => a.order - b.order
+        );
 
         for (const rune of sortedRunes) {
             const runeData = await rune.getData(); // Handles TTL
-            const contentTokens = await this.gateway.tokenize(runeData.content);
-            // runeData.tokenLength = contentTokens; // RuneData interface doesn't have tokenLength in your latest file.
+            runeData.tokens = await this.gateway.tokenize(runeData.content);
 
-            const fits =
-                currentSystemTokens + currentUserPromptTokens + contentTokens <=
-                effectiveMaxPromptTokens;
-
-            if (fits) {
+            if (
+                currentSystemTokens +
+                    currentUserPromptTokens +
+                    runeData.tokens <=
+                maxOutputTokens
+            ) {
                 if (runeData.type === "system") {
                     systemRuneContent.push(runeData.content);
-                    currentSystemTokens += contentTokens;
+                    currentSystemTokens += runeData.tokens;
                 } else {
                     userRuneContent.push(runeData.content);
-                    currentUserPromptTokens += contentTokens;
+                    currentUserPromptTokens += runeData.tokens;
                 }
             } else {
                 console.warn(
-                    `[Agent] Rune '${rune.key}' content (approx ${contentTokens} tokens) would exceed prompt token limit (${effectiveMaxPromptTokens}). Skipping or consider truncation.`
+                    `[Agent] Rune '${rune.key}' content (approx ${runeData.tokens} tokens) would exceed prompt token limit (${maxOutputTokens}). Skipping or consider truncation.`
                 );
-                // TODO: Implement more sophisticated truncation if needed
                 break;
             }
         }
@@ -141,80 +138,36 @@ export class Agent {
             edictMetadataString
         );
 
-        let finalEdictMetadataForPrompt = "";
         if (
             edictMetadataString &&
             currentSystemTokens +
                 currentUserPromptTokens +
                 edictMetadataTokens <=
-                effectiveMaxPromptTokens
+                maxOutputTokens
         ) {
-            finalEdictMetadataForPrompt = edictMetadataString;
+            systemRuneContent.push(edictMetadataString);
             currentSystemTokens += edictMetadataTokens;
         } else if (edictMetadataString) {
             console.warn(
                 `[Agent] Edict descriptions (approx ${edictMetadataTokens} tokens) would exceed prompt token limit. Descriptions might be omitted or truncated.`
             );
-            // TODO: Truncate edictMetadataString or select fewer edicts
         }
 
-        let userQueryString = "";
-        if (userInput) {
-            const userInputTokens = await this.gateway.tokenize(userInput);
-            if (
-                currentSystemTokens +
-                    currentUserPromptTokens +
-                    userInputTokens <=
-                effectiveMaxPromptTokens
-            ) {
-                userQueryString = "\n\nHuman input:\n" + userInput; // Added formatting
-                currentUserPromptTokens += userInputTokens;
-            } else {
-                console.warn(
-                    `[Agent] User input (approx ${userInputTokens} tokens) would exceed prompt token limit. May be truncated or omitted.`
-                );
-                // TODO: Truncate userInput
-            }
-        }
-
-        let systemPrompt = systemRuneContent.join("\n\n"); // Join with double newline
-        if (finalEdictMetadataForPrompt) {
-            systemPrompt +=
-                "\n\n--- AVAILABLE TOOLS ---\n" + finalEdictMetadataForPrompt;
-        }
-
-        let userPrompt = userRuneContent.join("\n\n"); // Join with double newline
-        if (userQueryString) {
-            userPrompt += userQueryString;
-        }
-        if (
-            !userPrompt &&
-            systemRuneContent.length === 0 &&
-            !finalEdictMetadataForPrompt
-        ) {
-            // if user prompt is empty and system is also minimal
-            if (!userInput)
-                throw new Error(
-                    "[Agent] Cannot process with empty prompts and no user input."
-                );
-            userPrompt = userInput || ""; // Default to user input if all else is empty
-        }
+        let systemPrompt = systemRuneContent.join("\n\n");
+        let userPrompt = userRuneContent.join("\n\n");
 
         console.log(
-            `[Agent] Prompts built. System tokens: ~${currentSystemTokens}, User tokens: ~${currentUserPromptTokens}, Target: ${effectiveMaxPromptTokens}`
+            `[Agent] Prompts built. System tokens: ~${currentSystemTokens}, User tokens: ~${currentUserPromptTokens}`
         );
         return { systemPrompt, userPrompt };
     }
 
     // Main interaction method
-    async processTurn(
-        userInput?: string,
-        specificRunes?: Rune[]
-    ): Promise<GatewayOutput> {
+    async execute(): Promise<GatewayOutput> {
         if (!this.gateway) {
             throw new Error("[Agent] Gateway not set. Cannot process turn.");
         }
-        if (this.runes.size === 0 && !userInput) {
+        if (this.runes.size === 0) {
             console.warn(
                 "[Agent] No runes added and no user input provided. Processing might yield limited results."
             );
@@ -225,10 +178,7 @@ export class Agent {
             );
         }
 
-        const { systemPrompt, userPrompt } = await this.buildPrompts(
-            userInput,
-            specificRunes
-        );
+        const { systemPrompt, userPrompt } = await this.buildPrompts();
 
         const llmParams: LLMCallParams = {
             maxOutputTokens: this.config.maxOutputTokens,
