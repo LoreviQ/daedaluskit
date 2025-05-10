@@ -19,11 +19,8 @@ export interface IRune<Config = any> {
     type: RuneType;
     name: string;
     description: string;
-    data?: string;
     ttl: number; // Duration in milliseconds
-    expiresAt: number; // Timestamp in milliseconds
     initialize?(agent: Agent): Promise<void>;
-    gather(): Promise<string>;
     getData(revalidate?: boolean): Promise<RuneData>;
 }
 
@@ -35,8 +32,9 @@ export abstract class Rune<Config = any> implements IRune<Config> {
     name: string;
     description: string;
     ttl: number;
-    expiresAt: number;
-    data?: string;
+
+    protected data?: string;
+    protected expiresAt: number;
 
     constructor(
         key: string,
@@ -70,8 +68,8 @@ export abstract class Rune<Config = any> implements IRune<Config> {
         this.expiresAt = 0;
     }
 
-    abstract initialize?(agent: Agent): Promise<void>;
-    abstract gather(): Promise<string>;
+    public async initialize?(agent: Agent): Promise<void>;
+    protected abstract gather(): Promise<string>;
 
     async getData(revalidate: boolean = false): Promise<RuneData> {
         if (

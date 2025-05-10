@@ -66,18 +66,10 @@ export class Agent {
 
     private formatEdictsForPrompt(edictsToFormat: Edict[]): string {
         if (!edictsToFormat || edictsToFormat.length === 0) return "";
-        const tool_descriptions = edictsToFormat
-            .map(
-                (edict) =>
-                    `Tool: ${edict.key}\nDescription: ${
-                        edict.description
-                    }\nArguments (JSON Schema): ${JSON.stringify(
-                        edict.argsSchema
-                    )}\n---`
-                // Make sure e.argsSchema is not undefined if you stringify it directly, or handle undefined
-            )
-            .join("\n\n"); // Added double newline for better separation
-        return ["--- AVAILABLE TOOLS ---", tool_descriptions].join("\n\n");
+        return [
+            "--- AVAILABLE TOOLS ---",
+            edictsToFormat.map((e) => e.toPrompt()),
+        ].join("\n\n");
     }
 
     private async buildPrompts(): Promise<{
@@ -91,11 +83,9 @@ export class Agent {
         }
 
         const modelContextWindow = this.gateway.getModelContextWindow();
+        // used later for more intelligent truncation
         const targetTokens =
             this.config.targetTokens || DEFAULT_AGENT_CONFIG.targetTokens;
-        const maxOutputTokens =
-            this.config.maxOutputTokens || DEFAULT_AGENT_CONFIG.maxOutputTokens;
-
         let currentSystemTokens = 0;
         let currentUserPromptTokens = 0;
 
@@ -114,7 +104,7 @@ export class Agent {
                 currentSystemTokens +
                     currentUserPromptTokens +
                     runeData.tokens <=
-                maxOutputTokens
+                modelContextWindow
             ) {
                 if (runeData.type === "system") {
                     systemRuneContent.push(runeData.content);
@@ -125,7 +115,7 @@ export class Agent {
                 }
             } else {
                 console.warn(
-                    `[Agent] Rune '${rune.key}' content (approx ${runeData.tokens} tokens) would exceed prompt token limit (${maxOutputTokens}). Skipping or consider truncation.`
+                    `[Agent] Rune '${rune.key}' content (approx ${runeData.tokens} tokens) would exceed prompt token limit (${modelContextWindow}). Skipping or consider truncation.`
                 );
                 break;
             }
@@ -143,7 +133,7 @@ export class Agent {
             currentSystemTokens +
                 currentUserPromptTokens +
                 edictMetadataTokens <=
-                maxOutputTokens
+                modelContextWindow
         ) {
             systemRuneContent.push(edictMetadataString);
             currentSystemTokens += edictMetadataTokens;
