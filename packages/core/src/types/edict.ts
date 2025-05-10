@@ -5,7 +5,6 @@ export interface IEdict<Config = any, Args = any, Result = any> {
     config?: Config;
     description: string; // Textual description of what the edict does for the LLM
     argsSchema?: any; // JSON schema for the arguments
-    initialize?(agent: Agent): Promise<void>;
     execute(args: Args): Promise<Result>; // execution function
     toPrompt(): string; // function to convert the edict to a prompt
 }
@@ -30,7 +29,6 @@ export abstract class Edict<Config = any, Args = any, Result = any>
         this.config = config;
     }
 
-    public async initialize?(agent: Agent): Promise<void>;
     public abstract execute(args: Args): Promise<Result>;
 
     public toPrompt(): string {

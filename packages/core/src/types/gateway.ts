@@ -24,7 +24,6 @@ export interface Gateway<Config = any> {
     name: string;
     getModelContextWindow(): number; // Maximum number of tokens the gateway can support
     tokenize(text: string): Promise<number>;
-    initialize?(agent: Agent): Promise<void>;
     process(
         systemPrompt: string,
         userPrompt: string,
