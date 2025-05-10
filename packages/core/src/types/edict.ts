@@ -1,5 +1,3 @@
-import { Agent } from "../agent";
-
 export interface IEdict<Config = any, Args = any, Result = any> {
     readonly key: string;
     config?: Config;
