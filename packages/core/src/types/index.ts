@@ -1,2 +1,3 @@
 export * from "./rune";
-export * from "./context";
+export * from "./edict";
+export * from "./gateway";
