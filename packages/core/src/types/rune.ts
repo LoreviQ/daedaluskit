@@ -38,28 +38,26 @@ export abstract class Rune<Config = any> implements IRune<Config> {
 
     constructor(
         key: string,
-        options: {
-            order: number;
-            type: RuneType;
-            name: string;
-            description: string;
-            ttlString: string; // e.g., "5m"
-            config?: Config;
-        }
+        order: number,
+        type: RuneType,
+        name: string,
+        description: string,
+        ttlString: string, // e.g., "5m"
+        config?: Config
     ) {
         this.key = key;
-        this.order = options.order;
-        this.type = options.type;
-        this.name = options.name;
-        this.description = options.description;
-        this.config = options.config;
+        this.order = order;
+        this.type = type;
+        this.name = name;
+        this.description = description;
+        this.config = config;
 
         const parsedTtl = (ms as (value: string) => number | undefined)(
-            options.ttlString
+            ttlString
         );
         if (typeof parsedTtl !== "number") {
             console.warn(
-                `[Rune: ${this.key}] Invalid TTL string: "${options.ttlString}". Defaulting to 0ms (will always revalidate).`
+                `[Rune: ${this.key}] Invalid TTL string: "${ttlString}". Defaulting to 0ms (will always revalidate).`
             );
             this.ttl = 0;
         } else {

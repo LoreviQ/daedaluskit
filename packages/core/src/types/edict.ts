@@ -20,16 +20,14 @@ export abstract class Edict<Config = any, Args = any, Result = any>
 
     constructor(
         key: string,
-        options: {
-            description: string;
-            argsSchema?: any;
-            config?: Config;
-        }
+        description: string,
+        argsSchema?: any,
+        config?: Config
     ) {
         this.key = key;
-        this.description = options.description;
-        this.argsSchema = options.argsSchema;
-        this.config = options.config;
+        this.description = description;
+        this.argsSchema = argsSchema;
+        this.config = config;
     }
 
     public async initialize?(agent: Agent): Promise<void>;

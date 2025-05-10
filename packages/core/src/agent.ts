@@ -24,6 +24,7 @@ export class Agent {
     private edicts: Map<string, Edict> = new Map();
     private gateway?: Gateway;
     public config: AgentConfig;
+    public currentCatalystData: any = null;
 
     constructor(config?: Partial<AgentConfig>) {
         this.config = {
@@ -153,7 +154,8 @@ export class Agent {
     }
 
     // Main interaction method
-    async execute(): Promise<GatewayOutput> {
+    async execute(catalystData: any): Promise<GatewayOutput> {
+        this.currentCatalystData = catalystData;
         if (!this.gateway) {
             throw new Error("[Agent] Gateway not set. Cannot process turn.");
         }
@@ -200,6 +202,7 @@ export class Agent {
             );
         }
 
+        this.currentCatalystData = null;
         return gatewayOutput;
     }
 }
