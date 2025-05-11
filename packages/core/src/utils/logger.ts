@@ -5,19 +5,20 @@ export interface LogMetadata {
     componentKey?: string;
 }
 
-// Custom format to achieve [timestamp] [loglevel] [agentName] [componentKey] log text
+// Custom format to achieve [agentName] [componentKey] log text
 const customFormat = winston.format.printf(
-    ({ level, message, timestamp, agentName, componentKey }) => {
-        let log = `${timestamp} [${level.toUpperCase()}]`;
-
+    ({ message, agentName, componentKey }) => {
+        let logs = [];
         if (agentName) {
-            log += ` [${agentName}]`;
+            logs.push(`[${agentName}]`);
         }
         if (componentKey) {
-            log += ` [${componentKey}]`;
+            logs.push(`[${componentKey}]`);
         }
-        log += ` ${message}`;
-        return log;
+        if (message) {
+            logs.push(message);
+        }
+        return logs.join(" ");
     }
 );
 
@@ -27,12 +28,7 @@ export function createAgentLogger(
 ): winston.Logger {
     return winston.createLogger({
         level: logLevel,
-        format: winston.format.combine(
-            winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-            winston.format.colorize(), // Adds colors to the level
-            winston.format.errors({ stack: true }), // Handles error objects, adds stack trace
-            customFormat
-        ),
+        format: winston.format.combine(customFormat),
         defaultMeta: { agentName },
         transports: [new winston.transports.Console()],
     });

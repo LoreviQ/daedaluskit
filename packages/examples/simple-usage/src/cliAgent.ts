@@ -14,6 +14,7 @@ const catalyst = new Catalysts.Direct();
 
 const cliAgent = new Agent({
     name: "CLI Agent",
+    logLevel: "debug",
 })
     .addRunes([
         new Runes.CatalystContext(),
@@ -38,7 +39,7 @@ async function runCLI() {
     const rl = readline.createInterface({ input, output });
 
     console.log("Daedalus CLI Agent started. Type 'exit' or 'quit' to end.");
-    console.log("System Prefix: You are a helpful assistant.");
+    console.log("");
 
     // eslint-disable-next-line no-constant-condition
     while (true) {

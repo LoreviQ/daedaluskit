@@ -215,6 +215,14 @@ export class Agent {
         };
 
         this.logger.info("Handing off to Gateway...");
+        this.logger.debug(
+            "----------System Prompt----------",
+            systemPrompt,
+            "----------User Prompt----------",
+            userPrompt,
+            "----------LLM Params----------",
+            llmParams
+        );
         const gatewayOutput = await this.gateway.process(
             systemPrompt,
             userPrompt,
