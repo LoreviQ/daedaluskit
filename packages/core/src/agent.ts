@@ -7,6 +7,7 @@ import {
     Gateway,
     GatewayOutput,
     LLMCallParams,
+    Blueprint,
 } from "./types";
 import { createAgentLogger } from "./utils/logger";
 
@@ -94,6 +95,43 @@ export class Agent {
         for (const catalyst of catalysts) {
             this.addCatalyst(catalyst);
         }
+        return this;
+    }
+
+    /**
+     * Adds all components from a Blueprint to the agent.
+     * Runes, Edicts, and Catalysts from the blueprint will be added,
+     * and the Gateway from the blueprint will be set.
+     * All components will be initialized as they are added to the agent.
+     * @param blueprint The Blueprint instance to load.
+     * @returns The agent instance for chaining.
+     */
+    addBlueprint(blueprint: Blueprint): this {
+        this.logger.info(`Loading components from blueprint...`);
+
+        if (blueprint.runes.length > 0) {
+            this.addRunes(blueprint.runes as Rune[]); // Cast because blueprint.runes is ReadonlyArray
+            this.logger.info(
+                `Added ${blueprint.runes.length} rune(s) from blueprint.`
+            );
+        }
+        if (blueprint.edicts.length > 0) {
+            this.addEdicts(blueprint.edicts as Edict[]); // Cast
+            this.logger.info(
+                `Added ${blueprint.edicts.length} edict(s) from blueprint.`
+            );
+        }
+        if (blueprint.catalysts.length > 0) {
+            this.addCatalysts(blueprint.catalysts as Catalyst[]); // Cast
+            this.logger.info(
+                `Added ${blueprint.catalysts.length} catalyst(s) from blueprint.`
+            );
+        }
+        if (blueprint.gateway) {
+            this.setGateway(blueprint.gateway);
+            this.logger.info(`Set gateway from blueprint.`);
+        }
+        this.logger.info("Blueprint components loaded successfully.");
         return this;
     }
 

@@ -1,4 +1,4 @@
-import { Agent } from "@daedaluskit/core";
+import { Agent, Blueprint } from "@daedaluskit/core";
 import { Catalysts, Runes, Edicts, Gateways } from "@daedaluskit/basic";
 
 // Added imports for CLI interaction and .env loading
@@ -11,24 +11,24 @@ import path from "node:path";
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const catalyst = new Catalysts.Direct();
-
-const cliAgent = new Agent({
-    name: "CLI Agent",
-    logLevel: "debug",
-})
-    .addRunes([
+const cliAgentBP = new Blueprint({
+    runes: [
         new Runes.CatalystContext(),
         new Runes.SystemPrefix(
             "You are a helpful assistant. Reply to the user."
         ),
-    ])
-    .addEdict(new Edicts.Reply())
-    .addCatalyst(catalyst)
-    .setGateway(
-        new Gateways.Gemini25Flash({
-            apiKey: process.env.GEMINI_API_KEY,
-        })
-    );
+    ],
+    edicts: [new Edicts.Reply()],
+    catalysts: [catalyst],
+    gateway: new Gateways.Gemini25Flash({
+        apiKey: process.env.GEMINI_API_KEY,
+    }),
+});
+
+new Agent({
+    name: "CLI Agent",
+    logLevel: "debug",
+}).addBlueprint(cliAgentBP);
 
 async function runCLI() {
     if (!process.env.GEMINI_API_KEY) {
