@@ -18,7 +18,9 @@ const cliAgent = new Agent({
 })
     .addRunes([
         new Runes.CatalystContext(),
-        new Runes.SystemPrefix("You are a helpful assistant."),
+        new Runes.SystemPrefix(
+            "You are a helpful assistant. Reply to the user."
+        ),
     ])
     .addEdict(new Edicts.Reply())
     .addCatalyst(catalyst)

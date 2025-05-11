@@ -106,10 +106,14 @@ export class Agent {
     private formatEdictsForPrompt(): string {
         const edictsArray = Array.from(this.edicts.values());
         if (!edictsArray || edictsArray.length === 0) return "";
+        return "";
+        /* Might be unecessary? Check other model providers
         return [
-            "--- AVAILABLE TOOLS ---",
+            "<available_tools>",
             edictsArray.map((e) => e.toPrompt()),
+            "</available_tools>",
         ].join("\n\n");
+        */
     }
 
     private async buildPrompts(): Promise<{

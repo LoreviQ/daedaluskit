@@ -46,19 +46,24 @@ export abstract class Edict<Config = any, Args = any, Result = any>
     }
 
     public toPrompt(): string {
-        let desc = `Tool: ${this.key}\nDescription: ${this.description}`;
+        const prompt = [];
+        prompt.push(`<${this.key}_tool>`);
+        prompt.push(`Key: ${this.key}`);
+        prompt.push(`Description: ${this.description}`);
         if (this.argsSchema) {
             try {
-                desc += `\nArguments (JSON Schema): ${JSON.stringify(
+                const args = `Arguments (JSON Schema): ${JSON.stringify(
                     this.argsSchema,
                     null,
                     2
                 )}`;
+                prompt.push(args);
             } catch (e) {
-                desc += `\nArguments Schema: (Error serializing schema)`;
+                this.logger?.error(`Error converting argsSchema to JSON: ${e}`);
             }
         }
-        return desc + "\n---";
+        prompt.push(`</${this.key}_tool>`);
+        return prompt.join("\n");
     }
 
     public abstract execute(args: Args): Promise<Result>;

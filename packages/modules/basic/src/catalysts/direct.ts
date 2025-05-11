@@ -6,7 +6,7 @@ export class Direct extends Catalyst {
     }
 
     async execute(data: string): Promise<void> {
-        this.logger?.info(`Catalyst ${this.key} called with ${data}`);
+        this.logger?.info(`Catalyst ${this.key} called with "${data}"`);
         if (!this.agent) {
             this.logger?.error(`[${this.key}] Agent is not set.`);
             return;
