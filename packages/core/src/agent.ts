@@ -233,7 +233,6 @@ export class Agent {
             this.edicts,
             llmParams
         );
-
         this.logger.info("Received output from Gateway.");
         if (gatewayOutput.finalTextResponse) {
             this.logger.info(

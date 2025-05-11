@@ -112,7 +112,6 @@ export class Gemini25Flash extends Gateway<Gemini25FlashConfig> {
             this.logger?.info("No function call found in the response.");
             this.logger?.info(response.text);
         }
-
         // returns metadata about the response
         return {
             finalTextResponse: response.text,
