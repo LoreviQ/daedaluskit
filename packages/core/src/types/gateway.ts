@@ -3,13 +3,13 @@ import { Edict } from "./edict";
 export interface GatewayOutput {
     finalTextResponse?: string;
     executedEdicts?: { key: string; args: any; result: any; error?: string }[];
-    rawLLMResponse?: any;
     usageData?: {
-        promptTokens: number;
-        completionTokens: number;
-        totalTokens: number;
+        promptTokens?: number;
+        completionTokens?: number;
+        totalTokens?: number;
     };
 }
+
 /** Optional model configuration parameters.*/
 export interface LLMCallParams {
     temperature?: number;
@@ -32,7 +32,7 @@ export interface Gateway<Config = any> {
     process(
         systemPrompt: string,
         userPrompt: string,
-        edicts: Edict<any, any, any>[],
+        edicts: Map<string, Edict>,
         llmParams: LLMCallParams
     ): Promise<GatewayOutput>;
 }

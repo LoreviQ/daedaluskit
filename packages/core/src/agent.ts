@@ -93,15 +93,12 @@ export class Agent {
         return this;
     }
 
-    private getEdictsArray(): Edict[] {
-        return Array.from(this.edicts.values());
-    }
-
-    private formatEdictsForPrompt(edictsToFormat: Edict[]): string {
-        if (!edictsToFormat || edictsToFormat.length === 0) return "";
+    private formatEdictsForPrompt(): string {
+        const edictsArray = Array.from(this.edicts.values());
+        if (!edictsArray || edictsArray.length === 0) return "";
         return [
             "--- AVAILABLE TOOLS ---",
-            edictsToFormat.map((e) => e.toPrompt()),
+            edictsArray.map((e) => e.toPrompt()),
         ].join("\n\n");
     }
 
@@ -154,9 +151,7 @@ export class Agent {
             }
         }
 
-        const edictMetadataString = this.formatEdictsForPrompt(
-            this.getEdictsArray()
-        );
+        const edictMetadataString = this.formatEdictsForPrompt();
         const edictMetadataTokens = await this.gateway.tokenize(
             edictMetadataString
         );
@@ -213,7 +208,7 @@ export class Agent {
         const gatewayOutput = await this.gateway.process(
             systemPrompt,
             userPrompt,
-            this.getEdictsArray(),
+            this.edicts,
             llmParams
         );
 
