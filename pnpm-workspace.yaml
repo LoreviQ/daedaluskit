@@ -1,3 +1,4 @@
 packages:
-  - "packages/*"
-  - "packages/modules/*"
+    - "packages/*"
+    - "packages/modules/*"
+    - "packages/examples/*"
