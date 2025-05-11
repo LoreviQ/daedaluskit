@@ -83,6 +83,11 @@ export class Gemini25Flash extends Gateway<Gemini25FlashConfig> {
             },
         });
 
+        this.logger?.debug(
+            "----------GEMINI 2.5 FLASH RESPONSE----------",
+            response
+        );
+
         // Execute the edicts based on the function calls in the response
         const executedEdicts = [];
         if (response.functionCalls && response.functionCalls.length > 0) {
