@@ -1,8 +1,11 @@
+import { OpenAPIV3 } from "openapi-types";
+
 export interface IEdict<Config = any, Args = any, Result = any> {
     readonly key: string;
     config?: Config;
     description: string; // Textual description of what the edict does for the LLM
-    argsSchema?: any; // JSON schema for the arguments
+    argsSchema?: OpenAPIV3.SchemaObject; // JSON schema for the arguments matching the OpenAPI V3 spec
+    /// responseSchema?: TODO
     execute(args: Args): Promise<Result>; // execution function
     toPrompt(): string; // function to convert the edict to a prompt
 }
@@ -11,14 +14,14 @@ export abstract class Edict<Config = any, Args = any, Result = any>
     implements IEdict<Config, Args, Result>
 {
     readonly key: string;
-    config?: Config;
     description: string;
-    argsSchema?: any;
+    argsSchema?: OpenAPIV3.SchemaObject;
+    config?: Config;
 
     constructor(
         key: string,
         description: string,
-        argsSchema?: any,
+        argsSchema?: OpenAPIV3.SchemaObject,
         config?: Config
     ) {
         this.key = key;
@@ -32,7 +35,6 @@ export abstract class Edict<Config = any, Args = any, Result = any>
     public toPrompt(): string {
         let desc = `Tool: ${this.key}\nDescription: ${this.description}`;
         if (this.argsSchema) {
-            // Ensure argsSchema isn't undefined before stringifying
             try {
                 desc += `\nArguments (JSON Schema): ${JSON.stringify(
                     this.argsSchema,

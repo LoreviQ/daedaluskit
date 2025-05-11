@@ -6,6 +6,7 @@ lib
 .idea/
 .vscode/
 coverage/
+**.env
 
 # TurboRepo cache
 .turbo/

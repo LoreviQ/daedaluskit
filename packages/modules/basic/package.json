@@ -1,25 +1,26 @@
 {
-  "name": "@daedaluskit/basic",
-  "version": "0.1.0",
-  "description": "Basic components for Daedaluskit",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "rimraf dist && tsc",
-    "clean": "rimraf dist",
-    "dev": "tsc -w",
-    "prepublishOnly": "pnpm run build"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "publishConfig": {
-    "access": "public"
-  },
-  "dependencies": {
-    "@daedaluskit/core": "workspace:*"
-  }
+    "name": "@daedaluskit/basic",
+    "version": "0.1.0",
+    "description": "Basic components for Daedaluskit",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "rimraf dist && tsc",
+        "clean": "rimraf dist",
+        "dev": "tsc -w",
+        "prepublishOnly": "pnpm run build"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@daedaluskit/core": "workspace:*",
+        "@google/genai": "^0.13.0"
+    }
 }

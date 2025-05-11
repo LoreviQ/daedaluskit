@@ -1,8 +1,6 @@
 import { Catalyst } from "@daedaluskit/core";
 
-export interface CatalystConfig {}
-
-export class DirectCatalyst extends Catalyst<CatalystConfig> {
+export class DirectCatalyst extends Catalyst {
     readonly key = "DirectCatalyst";
 
     async execute(data: string): Promise<void> {

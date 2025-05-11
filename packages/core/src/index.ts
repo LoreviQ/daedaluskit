@@ -3,3 +3,4 @@ export function getCoreVersion(): string {
 }
 export * from "./types";
 export * from "./agent";
+export { typeConversions } from "./utils";

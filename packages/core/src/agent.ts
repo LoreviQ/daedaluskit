@@ -40,7 +40,6 @@ export class Agent {
             );
         }
         this.runes.set(rune.key, rune);
-        rune.initialize?.(this);
         return this;
     }
 
@@ -51,13 +50,11 @@ export class Agent {
             );
         }
         this.edicts.set(edict.key, edict);
-        edict.initialize?.(this);
         return this;
     }
 
     setGateway(gateway: Gateway): this {
         this.gateway = gateway;
-        gateway.initialize?.(this);
         return this;
     }
 
@@ -83,7 +80,7 @@ export class Agent {
             );
         }
 
-        const modelContextWindow = this.gateway.getModelContextWindow();
+        const modelContextWindow = this.gateway.contextWindow;
         // used later for more intelligent truncation
         const targetTokens =
             this.config.targetTokens || DEFAULT_AGENT_CONFIG.targetTokens;

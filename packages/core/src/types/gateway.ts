@@ -1,4 +1,3 @@
-import { Agent } from "../agent";
 import { Edict } from "./edict";
 
 export interface GatewayOutput {
@@ -22,12 +21,12 @@ export interface Gateway<Config = any> {
     readonly key: string; // Unique identifier
     config?: Config;
     name: string;
-    getModelContextWindow(): number; // Maximum number of tokens the gateway can support
+    contextWindow: number; // Maximum number of tokens the gateway can support
     tokenize(text: string): Promise<number>;
     process(
         systemPrompt: string,
         userPrompt: string,
-        availableEdicts: Edict<any, any, any>[],
+        edicts: Edict<any, any, any>[],
         llmParams: LLMCallParams
     ): Promise<GatewayOutput>;
 }
