@@ -1,5 +1,7 @@
-import { Agent } from "../agent";
 import ms from "ms";
+import { Logger } from "winston";
+
+import { Agent } from "../agent";
 
 export type RuneType = "system" | "prompt";
 
@@ -21,6 +23,8 @@ export interface IRune<Config = any> {
     description: string;
     ttl: number; // Duration in milliseconds
     agent?: Agent;
+    logger?: Logger;
+    initialize(agent: Agent): void;
     getData(revalidate?: boolean): Promise<RuneData>;
 }
 
@@ -32,7 +36,10 @@ export abstract class Rune<Config = any> implements IRune<Config> {
     name: string;
     description: string;
     ttl: number;
+
+    // defined in initialize()
     agent?: Agent;
+    logger?: Logger;
 
     protected data?: string;
     protected expiresAt: number;
@@ -57,8 +64,8 @@ export abstract class Rune<Config = any> implements IRune<Config> {
             ttlString
         );
         if (typeof parsedTtl !== "number") {
-            console.warn(
-                `[Rune: ${this.key}] Invalid TTL string: "${ttlString}". Defaulting to 0ms (will always revalidate).`
+            this.logger?.warn(
+                `Invalid TTL string: "${ttlString}". Defaulting to 0ms (will always revalidate).`
             );
             this.ttl = 0;
         } else {
@@ -67,7 +74,10 @@ export abstract class Rune<Config = any> implements IRune<Config> {
         this.expiresAt = 0;
     }
 
-    protected abstract gather(): Promise<string>;
+    public initialize(agent: Agent): void {
+        this.agent = agent;
+        this.logger = agent.logger.child({ componentKey: this.key });
+    }
 
     async getData(revalidate: boolean = false): Promise<RuneData> {
         if (
@@ -90,4 +100,6 @@ export abstract class Rune<Config = any> implements IRune<Config> {
             tokens: undefined, // To be populated by the context builder
         };
     }
+
+    protected abstract gather(): Promise<string>;
 }

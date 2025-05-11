@@ -11,15 +11,16 @@ export interface Gemini25FlashConfig {
     apiKey: string;
 }
 
-export class Gemini25Flash implements Gateway<Gemini25FlashConfig> {
-    key = "gemini-2.5-flash-preview-04-17";
-    config: any;
-    name = "Gemini 2.5 Flash";
-    contextWindow = 1048576;
+export class Gemini25Flash extends Gateway<Gemini25FlashConfig> {
     private client: GoogleGenAI;
 
     constructor(config: any) {
-        this.config = config;
+        super(
+            "gemini-2.5-flash-preview-04-17",
+            "Gemini 2.5 Flash",
+            1048576,
+            config
+        );
         this.client = new GoogleGenAI({
             apiKey: config.apiKey,
         });
@@ -103,8 +104,8 @@ export class Gemini25Flash implements Gateway<Gemini25FlashConfig> {
                 });
             }
         } else {
-            console.log("No function call found in the response.");
-            console.log(response.text);
+            this.logger?.info("No function call found in the response.");
+            this.logger?.info(response.text);
         }
 
         // returns metadata about the response

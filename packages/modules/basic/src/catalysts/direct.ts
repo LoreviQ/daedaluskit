@@ -6,15 +6,18 @@ export class Direct extends Catalyst {
     }
 
     async execute(data: string): Promise<void> {
-        console.log(`Catalyst ${this.key} called with ${data}`);
+        this.logger?.info(`Catalyst ${this.key} called with ${data}`);
         if (!this.agent) {
-            console.error(`[${this.key}] Agent is not set.`);
+            this.logger?.error(`[${this.key}] Agent is not set.`);
             return;
         }
         try {
             await this.agent.execute(data);
         } catch (error) {
-            console.error(`[${this.key}] Error during agent execution:`, error);
+            this.logger?.error(
+                `[${this.key}] Error during agent execution:`,
+                error
+            );
         }
     }
 }

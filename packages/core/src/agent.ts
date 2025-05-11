@@ -1,3 +1,5 @@
+import { Logger } from "winston";
+
 import {
     Rune,
     Edict,
@@ -6,17 +8,22 @@ import {
     GatewayOutput,
     LLMCallParams,
 } from "./types";
+import { createAgentLogger } from "./utils/logger";
 
 export interface AgentConfig {
+    name: string; // Name of the agent
     targetTokens: number; // The Agent will aim for this number of tokens
     maxOutputTokens: number; // Maximum number of tokens for the LLM output
     temperature: number; // Temperature for the LLM
+    logLevel: string; // Log level for the agent
 }
 
 const DEFAULT_AGENT_CONFIG: AgentConfig = {
-    targetTokens: 10000, // Default
-    maxOutputTokens: 1024, // Default
-    temperature: 0.7, // Default
+    name: "Agent",
+    targetTokens: 10000,
+    maxOutputTokens: 1024,
+    temperature: 0.7,
+    logLevel: "info",
 };
 
 export class Agent {
@@ -26,21 +33,23 @@ export class Agent {
     private gateway?: Gateway;
     public config: AgentConfig;
     public currentCatalystData: any = null;
+    public logger: Logger;
 
     constructor(config?: Partial<AgentConfig>) {
         this.config = {
             ...DEFAULT_AGENT_CONFIG,
             ...config,
         };
+        this.logger = createAgentLogger(this.config.name, this.config.logLevel);
     }
 
     addRune(rune: Rune): this {
-        rune.agent = this;
         if (this.runes.has(rune.key)) {
-            console.warn(
-                `[Agent] Rune with key '${rune.key}' already exists. Overwriting.`
+            this.logger.warn(
+                `Rune with key '${rune.key}' already exists. Overwriting.`
             );
         }
+        rune.initialize(this);
         this.runes.set(rune.key, rune);
         return this;
     }
@@ -53,12 +62,12 @@ export class Agent {
     }
 
     addEdict(edict: Edict): this {
-        edict.agent = this;
         if (this.edicts.has(edict.key)) {
-            console.warn(
-                `[Agent] Edict with key '${edict.key}' already exists. Overwriting.`
+            this.logger.warn(
+                `Edict with key '${edict.key}' already exists. Overwriting.`
             );
         }
+        edict.initialize(this);
         this.edicts.set(edict.key, edict);
         return this;
     }
@@ -71,12 +80,12 @@ export class Agent {
     }
 
     addCatalyst(catalyst: Catalyst): this {
-        catalyst.agent = this;
         if (this.catalysts.has(catalyst.key)) {
-            console.warn(
-                `[Agent] Catalyst with key '${catalyst.key}' already exists. Overwriting.`
+            this.logger.warn(
+                `Catalyst with key '${catalyst.key}' already exists. Overwriting.`
             );
         }
+        catalyst.initialize(this);
         this.catalysts.set(catalyst.key, catalyst);
         return this;
     }
@@ -89,6 +98,7 @@ export class Agent {
     }
 
     setGateway(gateway: Gateway): this {
+        gateway.initialize(this);
         this.gateway = gateway;
         return this;
     }
@@ -108,7 +118,7 @@ export class Agent {
     }> {
         if (!this.gateway) {
             throw new Error(
-                "[Agent] Gateway not set. Cannot build prompts without tokenizer/context window."
+                "Gateway not set. Cannot build prompts without tokenizer/context window."
             );
         }
 
@@ -144,8 +154,8 @@ export class Agent {
                     currentUserPromptTokens += runeData.tokens;
                 }
             } else {
-                console.warn(
-                    `[Agent] Rune '${rune.key}' content (approx ${runeData.tokens} tokens) would exceed prompt token limit (${modelContextWindow}). Skipping or consider truncation.`
+                this.logger.warn(
+                    `Rune '${rune.key}' content (approx ${runeData.tokens} tokens) would exceed prompt token limit (${modelContextWindow}). Skipping or consider truncation.`
                 );
                 break;
             }
@@ -166,16 +176,16 @@ export class Agent {
             systemRuneContent.push(edictMetadataString);
             currentSystemTokens += edictMetadataTokens;
         } else if (edictMetadataString) {
-            console.warn(
-                `[Agent] Edict descriptions (approx ${edictMetadataTokens} tokens) would exceed prompt token limit. Descriptions might be omitted or truncated.`
+            this.logger.warn(
+                `Edict descriptions (approx ${edictMetadataTokens} tokens) would exceed prompt token limit. Descriptions might be omitted or truncated.`
             );
         }
 
         let systemPrompt = systemRuneContent.join("\n\n");
         let userPrompt = userRuneContent.join("\n\n");
 
-        console.log(
-            `[Agent] Prompts built. System tokens: ~${currentSystemTokens}, User tokens: ~${currentUserPromptTokens}`
+        this.logger.info(
+            `Prompts built. System tokens: ~${currentSystemTokens}, User tokens: ~${currentUserPromptTokens}`
         );
         return { systemPrompt, userPrompt };
     }
@@ -184,16 +194,16 @@ export class Agent {
     async execute(catalystData: any): Promise<GatewayOutput> {
         this.currentCatalystData = catalystData;
         if (!this.gateway) {
-            throw new Error("[Agent] Gateway not set. Cannot process turn.");
+            throw new Error("Gateway not set. Cannot process turn.");
         }
         if (this.runes.size === 0) {
-            console.warn(
-                "[Agent] No runes added and no user input provided. Processing might yield limited results."
+            this.logger.warn(
+                "No runes added and no user input provided. Processing might yield limited results."
             );
         }
         if (this.edicts.size === 0) {
-            console.warn(
-                "[Agent] No edicts added. Agent will not be able to perform actions."
+            this.logger.warn(
+                "No edicts added. Agent will not be able to perform actions."
             );
         }
 
@@ -204,7 +214,7 @@ export class Agent {
             temperature: this.config.temperature,
         };
 
-        console.log("[Agent] Handing off to Gateway...");
+        this.logger.info("Handing off to Gateway...");
         const gatewayOutput = await this.gateway.process(
             systemPrompt,
             userPrompt,
@@ -212,10 +222,10 @@ export class Agent {
             llmParams
         );
 
-        console.log("[Agent] Received output from Gateway.");
+        this.logger.info("Received output from Gateway.");
         if (gatewayOutput.finalTextResponse) {
-            console.log(
-                "[Agent] Final Text Response:",
+            this.logger.info(
+                "Final Text Response:",
                 gatewayOutput.finalTextResponse
             );
         }
@@ -223,10 +233,7 @@ export class Agent {
             gatewayOutput.executedEdicts &&
             gatewayOutput.executedEdicts.length > 0
         ) {
-            console.log(
-                "[Agent] Executed Edicts:",
-                gatewayOutput.executedEdicts
-            );
+            this.logger.info("Executed Edicts:", gatewayOutput.executedEdicts);
         }
 
         this.currentCatalystData = null;

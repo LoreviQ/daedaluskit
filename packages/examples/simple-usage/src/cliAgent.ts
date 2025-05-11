@@ -12,7 +12,9 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const catalyst = new Catalysts.Direct();
 
-const cliAgent = new Agent()
+const cliAgent = new Agent({
+    name: "CLI Agent",
+})
     .addRunes([
         new Runes.CatalystContext(),
         new Runes.SystemPrefix("You are a helpful assistant."),
@@ -28,8 +30,7 @@ const cliAgent = new Agent()
 async function runCLI() {
     if (!process.env.GEMINI_API_KEY) {
         console.error(
-            "GEMINI_API_KEY not found. Please ensure it is set in a .env file" +
-                " at /home/lore/workspace/github.com/LoreviQ/daedaluskit/packages/examples/simple-usage/.env"
+            "GEMINI_API_KEY not found. Please ensure it is set in a .env file"
         );
         process.exit(1);
     }

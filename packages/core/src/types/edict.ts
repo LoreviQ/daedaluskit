@@ -1,4 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
+import { Logger } from "winston";
+
 import { Agent } from "../agent";
 
 export interface IEdict<Config = any, Args = any, Result = any> {
@@ -6,10 +8,12 @@ export interface IEdict<Config = any, Args = any, Result = any> {
     config?: Config;
     description: string; // Textual description of what the edict does for the LLM
     agent?: Agent;
+    logger?: Logger;
     argsSchema?: OpenAPIV3.SchemaObject; // JSON schema for the arguments matching the OpenAPI V3 spec
     /// responseSchema?: TODO
-    execute(args: Args): Promise<Result>; // execution function
+    initialize(agent: Agent): void;
     toPrompt(): string; // function to convert the edict to a prompt
+    execute(args: Args): Promise<Result>; // execution function
 }
 
 export abstract class Edict<Config = any, Args = any, Result = any>
@@ -19,7 +23,10 @@ export abstract class Edict<Config = any, Args = any, Result = any>
     description: string;
     argsSchema?: OpenAPIV3.SchemaObject;
     config?: Config;
+
+    // defined in initialize()
     agent?: Agent;
+    logger?: Logger;
 
     constructor(
         key: string,
@@ -33,7 +40,10 @@ export abstract class Edict<Config = any, Args = any, Result = any>
         this.config = config;
     }
 
-    public abstract execute(args: Args): Promise<Result>;
+    public initialize(agent: Agent): void {
+        this.agent = agent;
+        this.logger = agent.logger.child({ componentKey: this.key });
+    }
 
     public toPrompt(): string {
         let desc = `Tool: ${this.key}\nDescription: ${this.description}`;
@@ -50,4 +60,6 @@ export abstract class Edict<Config = any, Args = any, Result = any>
         }
         return desc + "\n---";
     }
+
+    public abstract execute(args: Args): Promise<Result>;
 }
