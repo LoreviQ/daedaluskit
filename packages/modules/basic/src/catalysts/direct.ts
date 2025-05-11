@@ -1,7 +1,9 @@
 import { Catalyst } from "@daedaluskit/core";
 
 export class DirectCatalyst extends Catalyst {
-    readonly key = "DirectCatalyst";
+    constructor(agent: any, config?: any) {
+        super("DirectCatalyst", agent, config);
+    }
 
     async execute(data: string): Promise<void> {
         console.log(`Catalyst ${this.key} called with ${data}`);

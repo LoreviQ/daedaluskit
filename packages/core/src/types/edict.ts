@@ -1,9 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
+import { Agent } from "../agent";
 
 export interface IEdict<Config = any, Args = any, Result = any> {
     readonly key: string;
     config?: Config;
     description: string; // Textual description of what the edict does for the LLM
+    agent?: Agent;
     argsSchema?: OpenAPIV3.SchemaObject; // JSON schema for the arguments matching the OpenAPI V3 spec
     /// responseSchema?: TODO
     execute(args: Args): Promise<Result>; // execution function
@@ -17,6 +19,7 @@ export abstract class Edict<Config = any, Args = any, Result = any>
     description: string;
     argsSchema?: OpenAPIV3.SchemaObject;
     config?: Config;
+    agent?: Agent;
 
     constructor(
         key: string,

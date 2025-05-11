@@ -20,6 +20,7 @@ export interface IRune<Config = any> {
     name: string;
     description: string;
     ttl: number; // Duration in milliseconds
+    agent?: Agent;
     getData(revalidate?: boolean): Promise<RuneData>;
 }
 
@@ -31,6 +32,7 @@ export abstract class Rune<Config = any> implements IRune<Config> {
     name: string;
     description: string;
     ttl: number;
+    agent?: Agent;
 
     protected data?: string;
     protected expiresAt: number;

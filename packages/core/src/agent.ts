@@ -1,7 +1,7 @@
 import {
     Rune,
-    RuneData,
     Edict,
+    Catalyst,
     Gateway,
     GatewayOutput,
     LLMCallParams,
@@ -22,6 +22,7 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
 export class Agent {
     private runes: Map<string, Rune> = new Map();
     private edicts: Map<string, Edict> = new Map();
+    private catalysts: Map<string, Catalyst> = new Map();
     private gateway?: Gateway;
     public config: AgentConfig;
     public currentCatalystData: any = null;
@@ -34,6 +35,7 @@ export class Agent {
     }
 
     addRune(rune: Rune): this {
+        rune.agent = this;
         if (this.runes.has(rune.key)) {
             console.warn(
                 `[Agent] Rune with key '${rune.key}' already exists. Overwriting.`
@@ -44,12 +46,24 @@ export class Agent {
     }
 
     addEdict(edict: Edict): this {
+        edict.agent = this;
         if (this.edicts.has(edict.key)) {
             console.warn(
                 `[Agent] Edict with key '${edict.key}' already exists. Overwriting.`
             );
         }
         this.edicts.set(edict.key, edict);
+        return this;
+    }
+
+    addCatalyst(catalyst: Catalyst): this {
+        catalyst.agent = this;
+        if (this.catalysts.has(catalyst.key)) {
+            console.warn(
+                `[Agent] Catalyst with key '${catalyst.key}' already exists. Overwriting.`
+            );
+        }
+        this.catalysts.set(catalyst.key, catalyst);
         return this;
     }
 
