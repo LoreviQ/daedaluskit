@@ -1,5 +1,10 @@
-import { GoogleGenAI, Schema } from "@google/genai";
-import { Gateway, Edict, typeConversions } from "@daedaluskit/core";
+import { GoogleGenAI } from "@google/genai";
+import {
+    Gateway,
+    Edict,
+    typeConversions,
+    LLMCallParams,
+} from "@daedaluskit/core";
 
 export interface Gemini25FlashGatewayConfig {
     apiKey: string;
@@ -38,7 +43,7 @@ export class Gemini25FlashGateway
         systemPrompt: string,
         userPrompt: string,
         edicts: Edict[],
-        llmParams: any
+        llmParams: LLMCallParams
     ): Promise<any> {
         const declarations = [];
         for (const edict of edicts) {
@@ -58,6 +63,15 @@ export class Gemini25FlashGateway
             contents: userPrompt,
             config: {
                 systemInstruction: systemPrompt,
+                temperature: llmParams.temperature,
+                topP: llmParams.topP,
+                topK: llmParams.topK,
+                candidateCount: llmParams.candidateCount,
+                maxOutputTokens: llmParams.maxOutputTokens,
+                stopSequences: llmParams.stopSequences,
+                presencePenalty: llmParams.presencePenalty,
+                frequencyPenalty: llmParams.frequencyPenalty,
+                seed: llmParams.seed,
                 tools: [
                     {
                         functionDeclarations: declarations,

@@ -10,11 +10,17 @@ export interface GatewayOutput {
         totalTokens: number;
     };
 }
-
+/** Optional model configuration parameters.*/
 export interface LLMCallParams {
-    maxOutputTokens?: number;
     temperature?: number;
-    // ... other common LLM params
+    topP?: number;
+    topK?: number;
+    candidateCount?: number;
+    maxOutputTokens?: number;
+    stopSequences?: string[];
+    presencePenalty?: number;
+    frequencyPenalty?: number;
+    seed?: number;
 }
 
 export interface Gateway<Config = any> {
