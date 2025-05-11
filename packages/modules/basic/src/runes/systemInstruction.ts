@@ -1,6 +1,6 @@
 import { Rune } from "@daedaluskit/core";
 
-export class SystemPrefixRune extends Rune {
+export class SystemPrefix extends Rune {
     private systemPrefix: string;
     constructor(systemPrefix: string) {
         super(
@@ -19,7 +19,7 @@ export class SystemPrefixRune extends Rune {
     }
 }
 
-export class SystemSuffixRune extends Rune {
+export class SystemSuffix extends Rune {
     private systemSuffix: string;
     constructor(systemSuffix: string) {
         super(

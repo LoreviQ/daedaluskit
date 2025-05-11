@@ -1,7 +1,7 @@
 import { Edict } from "@daedaluskit/core";
 import { OpenAPIV3 } from "openapi-types";
 
-export class ReplyEdict extends Edict {
+export class Reply extends Edict {
     constructor(
         argsSchema: OpenAPIV3.SchemaObject = {
             type: "object",

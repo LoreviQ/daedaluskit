@@ -45,6 +45,13 @@ export class Agent {
         return this;
     }
 
+    addRunes(runes: Rune[]): this {
+        for (const rune of runes) {
+            this.addRune(rune);
+        }
+        return this;
+    }
+
     addEdict(edict: Edict): this {
         edict.agent = this;
         if (this.edicts.has(edict.key)) {
@@ -56,6 +63,13 @@ export class Agent {
         return this;
     }
 
+    addEdicts(edicts: Edict[]): this {
+        for (const edict of edicts) {
+            this.addEdict(edict);
+        }
+        return this;
+    }
+
     addCatalyst(catalyst: Catalyst): this {
         catalyst.agent = this;
         if (this.catalysts.has(catalyst.key)) {
@@ -64,6 +78,13 @@ export class Agent {
             );
         }
         this.catalysts.set(catalyst.key, catalyst);
+        return this;
+    }
+
+    addCatalysts(catalysts: Catalyst[]): this {
+        for (const catalyst of catalysts) {
+            this.addCatalyst(catalyst);
+        }
         return this;
     }
 

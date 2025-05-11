@@ -6,13 +6,11 @@ import {
     LLMCallParams,
 } from "@daedaluskit/core";
 
-export interface Gemini25FlashGatewayConfig {
+export interface Gemini25FlashConfig {
     apiKey: string;
 }
 
-export class Gemini25FlashGateway
-    implements Gateway<Gemini25FlashGatewayConfig>
-{
+export class Gemini25Flash implements Gateway<Gemini25FlashConfig> {
     key = "gemini-2.5-flash-preview-04-17";
     config: any;
     name = "Gemini 2.5 Flash";
