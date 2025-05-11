@@ -9,7 +9,7 @@ import {
     LLMCallParams,
     Blueprint,
 } from "./types";
-import { createAgentLogger } from "./utils/logger";
+import { createAgentLogger } from "./utils";
 
 export interface AgentConfig {
     name: string; // Name of the agent
@@ -27,6 +27,10 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
     logLevel: "info",
 };
 
+/**
+ * The Agent class is the main interface for interacting with the system.
+ * It manages runes, edicts, and catalysts, and handles the interaction with the LLM through a gateway.
+ */
 export class Agent {
     private runes: Map<string, Rune> = new Map();
     private edicts: Map<string, Edict> = new Map();
@@ -44,6 +48,13 @@ export class Agent {
         this.logger = createAgentLogger(this.config.name, this.config.logLevel);
     }
 
+    /**
+     * Adds a rune to the agent.
+     * Runes gather information and provide context for the agent.
+     * If a rune with the same key already exists, it will be overwritten.
+     * @param rune The Rune instance to add.
+     * @returns The agent instance for chaining.
+     */
     addRune(rune: Rune): this {
         if (this.runes.has(rune.key)) {
             this.logger.warn(
@@ -55,6 +66,11 @@ export class Agent {
         return this;
     }
 
+    /**
+     * Adds multiple runes to the agent.
+     * @param runes An array of Rune instances to add.
+     * @returns The agent instance for chaining.
+     */
     addRunes(runes: Rune[]): this {
         for (const rune of runes) {
             this.addRune(rune);
@@ -62,6 +78,13 @@ export class Agent {
         return this;
     }
 
+    /**
+     * Adds an edict to the agent.
+     * Edicts are actions that the agent can perform.
+     * If an edict with the same key already exists, it will be overwritten.
+     * @param edict The Edict instance to add.
+     * @returns The agent instance for chaining.
+     */
     addEdict(edict: Edict): this {
         if (this.edicts.has(edict.key)) {
             this.logger.warn(
@@ -73,6 +96,11 @@ export class Agent {
         return this;
     }
 
+    /**
+     * Adds multiple edicts to the agent.
+     * @param edicts An array of Edict instances to add.
+     * @returns The agent instance for chaining.
+     */
     addEdicts(edicts: Edict[]): this {
         for (const edict of edicts) {
             this.addEdict(edict);
@@ -80,6 +108,13 @@ export class Agent {
         return this;
     }
 
+    /**
+     * Adds a catalyst to the agent.
+     * Catalysts trigger the agent execution.
+     * If a catalyst with the same key already exists, it will be overwritten.
+     * @param catalyst The Catalyst instance to add.
+     * @returns The agent instance for chaining.
+     */
     addCatalyst(catalyst: Catalyst): this {
         if (this.catalysts.has(catalyst.key)) {
             this.logger.warn(
@@ -91,10 +126,27 @@ export class Agent {
         return this;
     }
 
+    /**
+     * Adds multiple catalysts to the agent.
+     * @param catalysts An array of Catalyst instances to add.
+     * @returns The agent instance for chaining.
+     */
     addCatalysts(catalysts: Catalyst[]): this {
         for (const catalyst of catalysts) {
             this.addCatalyst(catalyst);
         }
+        return this;
+    }
+
+    /**
+     * Sets the gateway for the agent.
+     * The gateway is responsible for processing the prompts and interacting with the LLM.
+     * @param gateway The Gateway instance to set.
+     * @returns The agent instance for chaining.
+     */
+    setGateway(gateway: Gateway): this {
+        gateway.initialize(this);
+        this.gateway = gateway;
         return this;
     }
 
@@ -135,23 +187,14 @@ export class Agent {
         return this;
     }
 
-    setGateway(gateway: Gateway): this {
-        gateway.initialize(this);
-        this.gateway = gateway;
-        return this;
-    }
-
     private formatEdictsForPrompt(): string {
         const edictsArray = Array.from(this.edicts.values());
         if (!edictsArray || edictsArray.length === 0) return "";
-        return "";
-        /* Might be unecessary? Check other model providers
         return [
             "<available_tools>",
             edictsArray.map((e) => e.toPrompt()),
             "</available_tools>",
         ].join("\n\n");
-        */
     }
 
     private async buildPrompts(): Promise<{
@@ -203,6 +246,7 @@ export class Agent {
             }
         }
 
+        /* Edict Metadeta might not be necessary? Test with other models
         const edictMetadataString = this.formatEdictsForPrompt();
         const edictMetadataTokens = await this.gateway.tokenize(
             edictMetadataString
@@ -222,6 +266,7 @@ export class Agent {
                 `Edict descriptions (approx ${edictMetadataTokens} tokens) would exceed prompt token limit. Descriptions might be omitted or truncated.`
             );
         }
+        */
 
         let systemPrompt = systemRuneContent.join("\n\n");
         let userPrompt = userRuneContent.join("\n\n");
